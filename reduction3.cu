@@ -2,7 +2,7 @@
 
 #define THREADS_PER_BLOCK 256
 
-__global__ void reduction3(const float* input, float* output){
+__global__ void reduction3(const float* input, float* output, int N){
   __shared__ float smem[THREADS_PER_BLOCK};
 
   unsigned int tid = threadIdx.x;
