@@ -1,3 +1,5 @@
+#include<cuda_runtime.h>
+#define THREADS_PER_BLCOK 256
 __global__ void reduce1(int *g_idata, int *g_odata) {
   extern __shared__ int sdata[];
   
