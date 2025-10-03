@@ -1,24 +1,37 @@
-#include<cuda_runtime.h>
+#include <cuda_runtime.h>
 
 #define THREADS_PER_BLOCK 256
 
-__global__ void reduction4(const float* input, float* output, int N){
-  __shared__ float smem[THREADS_PER_BLOCK];
+inline int cdiv(int a, int b){ return (a + b - 1)/b; }
 
-  unsigned int tid = threadIdx.x;
-  unsigned int i = blockIdx.x * blockDim.x * 2 + threadIdx.x;
+__global__ void reduction_kernel(const float* __restrict__ input,
+                                 float* __restrict__ output, int N){
+    __shared__ float smem[THREADS_PER_BLOCK];
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
 
-  smem[tid] = (tid < N ) ? (input[i] + input[i + blockDim.x]) : 0.0f;
-  __syncThreads();
+    float sum = 0.0f;
+    if (i < N) sum = input[i];
+    if (i + blockDim.x < N) sum += input[i + blockDim.x];  // use blockDim.x, not blockIdx.x
+    smem[tid] = sum;
+    __syncthreads();
 
-  for(unsigned int s = blockDim.x / 2; s>0; s>>=1){
-    int index  = 2 * s * tid;
-    if(tid < s){
-      smem[tid] += smem[tid + index];
+    // tree reduction in shared memory
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1){
+        if (tid < s){
+            smem[tid] += smem[tid + s];
+        }
+        __syncthreads();
     }
-    __syncThreads();
-  }
-  if(tid==0){
-    output[blockIdx.x] = smem[0];
-  }
+    if (tid == 0){
+        output[blockIdx.x] = smem[0];
+    }
+}
+
+// input, output are device pointers; output must have at least "blocks" elements
+extern "C" void solve(const float* input, float* output, int N) {
+    dim3 threads(THREADS_PER_BLOCK);
+    // each thread can load up to 2 elements
+    dim3 blocks((N + threads.x * 2 - 1) / (threads.x * 2));
+    reduction_kernel<<<blocks, threads>>>(input, output, N);
 }
