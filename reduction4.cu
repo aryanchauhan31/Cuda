@@ -8,12 +8,12 @@ __global__ void reduction4(const float* input, float* output, int N){
   unsigned int tid = threadIdx.x;
   unsigned int i = blockIdx.x * blockDim.x * 2 + threadIdx.x;
 
-  smem[tid] = (tid < N ) ? (input[tid] + input[tid + blockDim.x]) : 0.0f;
+  smem[tid] = (tid < N ) ? (input[i] + input[i + blockDim.x]) : 0.0f;
   __syncThreads();
 
   for(unsigned int s = blockDim.x / 2; s>0; s>>=1){
     int index  = 2 * s * tid;
-    if(tid < N){
+    if(tid < s){
       smem[tid] += smem[tid + index];
     }
     __syncThreads();
