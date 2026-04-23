@@ -85,6 +85,7 @@ __global__ void cross_entropy_kernel(const float* logits, const int* true_labels
     }
 }
 
+#ifndef TORCH_EXTENSION_NAME
 extern "C" void solve(const float* logits, const int* true_labels,
                       float* loss, int N, int C) {
     double* d_acc;
@@ -104,6 +105,7 @@ extern "C" void solve(const float* logits, const int* true_labels,
 
     cudaFree(d_acc);
 }
+#endif
 
 // Pytorch Wrapper Function
 #include <torch/extension.h>

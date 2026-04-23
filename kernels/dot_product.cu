@@ -47,6 +47,7 @@ __global__ void dot_kernel(const float* __restrict__ A,
     }
 }
 
+#ifndef TORCH_EXTENSION_NAME
 extern "C" void solve(const float* A, const float* B, float* result, int N) {
     cudaMemset(result, 0, sizeof(float));
 
@@ -57,6 +58,7 @@ extern "C" void solve(const float* A, const float* B, float* result, int N) {
 
     dot_kernel<<<blocks, THREADS_PER_BLOCK>>>(A, B, result, N);
 }
+#endif
 
 // Pytorch Wrapper Function
 #include<torch/extension.h>

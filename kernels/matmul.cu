@@ -42,6 +42,7 @@ __global__ void matmul_tiled_kernel(const float* __restrict__ A,
     }
 }
 
+#ifndef TORCH_EXTENSION_NAME
 extern "C" void solve(const float* A, const float* B, float* C,
                       int M, int N, int K) {
     dim3 threadsPerBlock(TILE, TILE);
@@ -49,6 +50,7 @@ extern "C" void solve(const float* A, const float* B, float* C,
                        (M + TILE - 1) / TILE);
     matmul_tiled_kernel<<<blocksPerGrid, threadsPerBlock>>>(A, B, C, M, N, K);
 }
+#endif
 
 // PyTorch Wrapper Function
 #include<torch/extension.h>

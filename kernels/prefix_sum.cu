@@ -53,10 +53,12 @@ void scan(const float* input, float* output, int N) {
     cudaFree(scanned_block_sums);
 }
 
+#ifndef TORCH_EXTENSION_NAME
 extern "C" void solve(const float* input, float* output, int N) {
     scan(input, output, N);
     cudaDeviceSynchronize();
 }
+#endif
 
 // PyTorch Wrapper Function 
 
