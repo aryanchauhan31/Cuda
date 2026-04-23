@@ -1,6 +1,6 @@
 #include<cuda_runtime.h>
 
-__global__ void block_scan_kernel(const float* input, const float* output, float* block_sums, int N){
+__global__ void block_scan_kernel(const float* input, float* output, float* block_sums, int N){
   extern __shared__ double shared[];
   int tid = threadIdx.x;
   int gid = blockDim.x * blockIdx.x + tid;
@@ -56,4 +56,26 @@ void scan(const float* input, float* output, int N) {
 extern "C" void solve(const float* input, float* output, int N) {
     scan(input, output, N);
     cudaDeviceSynchronize();
+}
+
+// PyTorch Wrapper Function 
+
+#include<torch/extension.h>
+
+torch::Tensor prefix_sum_forward(torch::Tensor input){
+    TORCH_CHECK(input.is_cuda(), "input is on cuda device");
+    TORCH_CHECK(input.dtype() == torch.kFloat32, "input should be Float32");
+    TORCH_CHECK(input.dim() == 1, "input should be 1D");
+
+    int N = input.size(0);
+    auto output = torch::empty_like(input);
+
+    scan(
+        input.data_ptr<float>(),
+        output.data_ptr<float>(),
+        N
+    );
+    cudaDeviceSynchronize();
+
+    return output;
 }

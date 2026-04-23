@@ -57,3 +57,28 @@ extern "C" void solve(const float* A, const float* B, float* result, int N) {
 
     dot_kernel<<<blocks, THREADS_PER_BLOCK>>>(A, B, result, N);
 }
+
+// Pytorch Wrapper Function
+#include<torch/extension.h>
+
+torch::Tensor dot_product_forward(torch::Tensor a, torch::Tensor b){
+    TORCH_CHECK(a.is_cuda() && b.is_cuda(), "inputs must be on CUDA DEVICE");
+    TORCH_CHECK(a.dtype() == torch.kFloat32, "inputs must be Float32");
+    TORCH_CHECK(a.size(0) == b.size(0), "inputs must be of same size");
+
+    int N = a.size(0);
+
+    auto result = torch::zeros({1}, a.options());
+
+    int blocks = (N + THREADS_PER_BLOCK - 1)/THREADS_PER_BLOCK;
+    if (blocks>MAX_BLOCKS) blocks = MAX_BLOCKS;
+
+    dot_kernel<<<blocks, THREADS_PER_BLOCK>>>(
+        a.data_ptr<float>(),
+        b.data_ptr<float>(),
+        result.data_ptr<float>(),
+        N
+    );
+
+    return result;
+}
