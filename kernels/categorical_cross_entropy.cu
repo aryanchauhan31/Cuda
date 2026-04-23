@@ -4,19 +4,19 @@
 #define THREADS_PER_BLOCK 256  
 #define WARP_SIZE 32
 #define WARPS_PER_BLOCK (THREADS_PER_BLOCK / WARP_SIZE)
-#define MASK 0xffffffffu
+#define FULL_MASK 0xffffffffu
 
 __device__ __forceinline__ float warp_max(float val) {
     #pragma unroll
     for (int offset = WARP_SIZE / 2; offset > 0; offset >>= 1)
-        val = fmaxf(val, __shfl_down_sync(MASK, val, offset));
+        val = fmaxf(val, __shfl_down_sync(FULL_MASK, val, offset));
     return val;
 }
 
 __device__ __forceinline__ float warp_sum(float val) {
     #pragma unroll
     for (int offset = WARP_SIZE / 2; offset > 0; offset >>= 1)
-        val += __shfl_down_sync(MASK, val, offset);
+        val += __shfl_down_sync(FULL_MASK, val, offset);
     return val;
 }
 
