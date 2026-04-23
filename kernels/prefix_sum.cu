@@ -64,7 +64,7 @@ extern "C" void solve(const float* input, float* output, int N) {
 
 torch::Tensor prefix_sum_forward(torch::Tensor input){
     TORCH_CHECK(input.is_cuda(), "input is on cuda device");
-    TORCH_CHECK(input.dtype() == torch.kFloat32, "input should be Float32");
+    TORCH_CHECK(input.dtype() == torch::kFloat32, "input should be Float32");
     TORCH_CHECK(input.dim() == 1, "input should be 1D");
 
     int N = input.size(0);
