@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 
-#define TILE 16   
+#define TILE 32   
 
 __global__ void matmul_tiled_kernel(const float* __restrict__ A,
                                     const float* __restrict__ B,
