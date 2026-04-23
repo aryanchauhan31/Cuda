@@ -104,3 +104,30 @@ extern "C" void solve(const float* logits, const int* true_labels,
 
     cudaFree(d_acc);
 }
+
+// Pytorch Wrapper Function
+#include <torch/extension.h>
+
+torch::Tensor cross_entropy_forward(torch::Tensor logits, torch::Tensor labels) {
+    TORCH_CHECK(logits.is_cuda() && labels.is_cuda(), "inputs must be on CUDA DEVICE");
+    TORCH_CHECK(logits.dtype() == torch::kFloat32, "logits must be Float32");
+    TORCH_CHECK(labels.dtype() == torch::kInt32, "labels must be Int32");
+    TORCH_CHECK(logits.dim() == 2, "logits must be 2D [N x C]");
+
+    int N = logits.size(0);
+    int C = logits.size(1);
+
+    auto acc = torch::zeros({1}, logits.options().dtype(torch::kFloat64));
+
+    int threads = min(C, THREADS_PER_BLOCK);
+    threads = ((threads + WARP_SIZE - 1) / WARP_SIZE) * WARP_SIZE;
+
+    cross_entropy_kernel<<<N, threads>>>(
+        logits.data_ptr<float>(),
+        labels.data_ptr<int>(),
+        acc.data_ptr<double>(),
+        N, C
+    );
+
+    return (acc / N).to(torch::kFloat32);
+}
