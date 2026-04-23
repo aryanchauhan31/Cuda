@@ -55,7 +55,7 @@ extern "C" void solve(const float* A, const float* B, float* C,
 
 torch::Tensor matmul_forward(torch::Tensor A, torch::Tensor B){
     TORCH_CHECK(A.is_cuda() && B.is_cuda(), "inputs should be on cuda device");
-    TORCH_CHECK(A.dtype() == torch.kFloat32 && B.dtype() == torch.kFloat32, "inputs should be float32");
+    TORCH_CHECK(A.dtype() == torch::kFloat32 && B.dtype() == torch.kFloat32, "inputs should be float32");
     TORCH_CHECK(A.dim()==2 && B.dim()==2, "inputs must be 2d");
     TORCH_CHECK(A.size(1)==B.size(0), "A cols must match B rows");
 

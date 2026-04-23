@@ -63,7 +63,7 @@ extern "C" void solve(const float* A, const float* B, float* result, int N) {
 
 torch::Tensor dot_product_forward(torch::Tensor a, torch::Tensor b){
     TORCH_CHECK(a.is_cuda() && b.is_cuda(), "inputs must be on CUDA DEVICE");
-    TORCH_CHECK(a.dtype() == torch.kFloat32, "inputs must be Float32");
+    TORCH_CHECK(a.dtype() == torch::kFloat32, "inputs must be Float32");
     TORCH_CHECK(a.size(0) == b.size(0), "inputs must be of same size");
 
     int N = a.size(0);

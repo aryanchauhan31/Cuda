@@ -1,6 +1,6 @@
 #include<cuda_runtime.h>
 
-__global__ void block_scan_kernel(const float* input, float* output, float* block_sums, int N){
+__global__ void block_scan_kernel(const float* input,float* output, float* block_sums, int N){
   extern __shared__ double shared[];
   int tid = threadIdx.x;
   int gid = blockDim.x * blockIdx.x + tid;
